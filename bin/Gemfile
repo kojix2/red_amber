@@ -1,0 +1,28 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gem 'irb'
+gem 'iruby'
+
+gem 'numo-narray'
+gem 'red-arrow', '~> 15.0.0'
+gem 'red-arrow-numo-narray'
+gem 'red-parquet', '~> 15.0.0'
+
+gem 'red_amber', path: '..'
+gem 'red-amber-view'
+gem 'rover-df'
+
+gem 'red-datasets'
+gem 'red-datasets-arrow'
+
+gem 'benchmark_driver'
+gem 'benchmark-ips'
+
+gem 'charty'
+gem 'faker'
+gem 'matplotlib'
+gem 'prime'
+gem 'pycall'
+gem 'unicode_plot'

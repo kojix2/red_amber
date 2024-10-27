@@ -6,25 +6,13 @@ class VectorTest < Test::Unit::TestCase
   include TestHelper
   include RedAmber
 
-  sub_test_case('drop_nil') do
-    test 'empty vector' do
-      assert_equal_array [], Vector.new([]).drop_nil
-    end
-
-    test 'drop_nil' do
-      assert_equal_array [1, 2], Vector.new([1, 2, nil]).drop_nil
-      assert_equal_array %w[A B], Vector.new(['A', 'B', nil]).drop_nil
-      assert_equal_array [true, false], Vector.new([true, false, nil]).drop_nil
-      assert_equal_array [], Vector.new([nil, nil, nil]).drop_nil
-    end
+  setup do
+    @string = Vector.new(%w[A B C D E])
+    @booleans = [true, false, nil, false, true]
+    @indices = [3, 0, -2]
   end
 
   sub_test_case('#take(indices)') do
-    setup do
-      @string = Vector.new(%w[A B C D E])
-      @indices = [3, 0, -2]
-    end
-
     test 'empty vector' do
       assert_equal_array [], Vector.new([]).take
     end
@@ -56,11 +44,6 @@ class VectorTest < Test::Unit::TestCase
   end
 
   sub_test_case('#filter(booleans)') do
-    setup do
-      @string = Vector.new(%w[A B C D E])
-      @booleans = [true, false, nil, false, true]
-    end
-
     test 'empty vector' do
       assert_equal_array [], Vector.new([]).filter
     end
@@ -94,12 +77,6 @@ class VectorTest < Test::Unit::TestCase
   end
 
   sub_test_case '#[]' do
-    setup do
-      @string = Vector.new(%w[A B C D E])
-      @booleans = [true, false, nil, false, true]
-      @indices = [3, 0, -2]
-    end
-
     test 'empty vector' do
       assert_nil Vector.new[]
     end
@@ -164,7 +141,7 @@ class VectorTest < Test::Unit::TestCase
       assert_equal_array @expected, @vector.is_in(Vector.new(@values)) # Vector
       assert_equal_array @expected, @vector.is_in([2.0, 3.0]) # Cast
       assert_equal_array @expected, Vector.new([1.0, 2, 3, 4, 5]).is_in([2, 3]) # Cast
-      assert_raise(TypeError) { @vector.is_in([1, true]) } # Can't cast
+      assert_raise(Arrow::Error::NotImplemented) { @vector.is_in([1, true]) } # Can't cast
     end
 
     test 'chunked array' do
@@ -176,7 +153,7 @@ class VectorTest < Test::Unit::TestCase
 
     test 'str and numeric' do
       array = ['1', 2, 3]
-      assert_equal_array @expected, @vector.is_in(array)
+      assert_raise(Arrow::Error::NotImplemented) { @vector.is_in(array) }
     end
 
     setup do
@@ -198,15 +175,207 @@ class VectorTest < Test::Unit::TestCase
       assert_equal_array expected, @int_vector.is_in(Arrow::Array.new(@uint))
       assert_equal_array expected, @int_vector.is_in(@uint_vector)
     end
+
+    test '#is_in string' do
+      string = Vector.new(%w[A B C D E])
+      expected = [true, false, true, true, false]
+      assert_equal_array expected, string.is_in(%w[A D C])
+      assert_equal_array expected, string.is_in('A', 'C'..'D')
+      assert_equal_array expected, string.is_in(Vector.new(%w[A D C]))
+    end
   end
 
   sub_test_case '#index' do
     vector = Vector.new([1, 2, 3, nil])
+
     test 'find index' do
       assert_equal 1, vector.index(2)
+    end
+
+    test 'find index for nil' do
       assert_equal 3, vector.index(nil)
+    end
+
+    test 'index not found' do
       assert_nil vector.index(0) # out of range
+    end
+
+    test 'find index for casted scalar' do
       assert_equal 1, vector.index(2.0) # types are ignored
+    end
+  end
+
+  sub_test_case '#first' do
+    vector = Vector.new([1, 2, 3, nil])
+    test '#first' do
+      assert_equal 1, vector.first
+    end
+  end
+
+  sub_test_case '#last' do
+    vector = Vector.new([1, 2, 3, nil])
+    test '#last' do
+      assert_nil vector.last
+    end
+  end
+
+  sub_test_case '#drop_nil' do
+    test 'empty vector' do
+      assert_equal_array [], Vector.new([]).drop_nil
+    end
+
+    test '#drop_nil' do
+      assert_equal_array [1, 2], Vector.new([1, 2, nil]).drop_nil
+      assert_equal_array %w[A B], Vector.new(['A', 'B', nil]).drop_nil
+      assert_equal_array [true, false], Vector.new([true, false, nil]).drop_nil
+      assert_equal_array [], Vector.new([nil, nil, nil]).drop_nil
+    end
+  end
+
+  sub_test_case '#sort' do
+    setup do
+      @source = Vector.new(%w[B D A E C])
+      @ascending = [*'A'..'E']
+    end
+
+    test '#sort in ascending order' do
+      assert_equal_array @ascending, @source.sort
+      assert_equal_array @ascending, @source.sort(:+)
+      assert_equal_array @ascending, @source.sort('+')
+      assert_equal_array @ascending, @source.sort(:ascending)
+      assert_equal_array @ascending, @source.sort(:increasing)
+    end
+
+    test '#sort in descending order' do
+      assert_equal_array @ascending.reverse, @source.sort(:-)
+      assert_equal_array @ascending.reverse, @source.sort('-')
+      assert_equal_array @ascending.reverse, @source.sort(:descending)
+      assert_equal_array @ascending.reverse, @source.sort(:decreasing)
+    end
+
+    test '#sort with illegal argument' do
+      assert_raise(VectorArgumentError) { @source.sort :red_amber }
+    end
+  end
+
+  sub_test_case '#rank' do
+    float = Vector[1, 0, nil, Float::NAN, 3, 2]
+    string = Vector['A', 'A', nil, nil, 'C', 'B']
+    chunked = Vector.new(Arrow::ChunkedArray.new([float.data]))
+
+    test '#rank default' do
+      expect = [2, 1, 6, 5, 4, 3]
+      assert_equal_array expect, float.rank
+      assert_equal_array expect, float.rank('+')
+      assert_equal_array expect,
+                         float.rank(:ascending, tie: :first, null_placement: :at_end)
+      assert_equal_array [1, 2, 5, 6, 4, 3], string.rank
+    end
+
+    test '#rank :descending' do
+      assert_equal_array [3, 4, 6, 5, 1, 2], float.rank(:descending)
+      assert_equal_array [3, 4, 6, 5, 1, 2], float.rank('-')
+    end
+
+    test '#rank tie: :min' do
+      assert_equal_array [1, 1, 5, 5, 4, 3], string.rank(tie: :min)
+    end
+
+    test '#rank tie: :max' do
+      assert_equal_array [2, 2, 6, 6, 4, 3], string.rank(tie: :max)
+    end
+
+    test '#rank tie: :dense' do
+      assert_equal_array [1, 1, 4, 4, 3, 2], string.rank(tie: :dense)
+    end
+
+    test '#rank null_placement: :at_start' do
+      assert_equal_array [4, 3, 1, 2, 6, 5], float.rank(null_placement: :at_start)
+    end
+
+    test '#rank chunkedarray as input' do
+      assert_equal_array [2, 1, 6, 5, 4, 3], chunked.rank
+    end
+
+    test '#rank illegal order option' do
+      assert_raise(VectorArgumentError) { float.rank('*') }
+    end
+  end
+
+  sub_test_case '#sample' do
+    setup do
+      @vector = Vector.new('A'..'H')
+    end
+
+    test '#sample empty Vector' do
+      assert_nil Vector.new([]).sample(1)
+    end
+
+    test '#sample negative number' do
+      assert_raise(VectorArgumentError) { @vector.sample(-1) }
+      assert_raise(VectorArgumentError) { @vector.sample(-1.0) }
+    end
+
+    test '#sample(0)' do
+      assert_equal_array [], @vector.sample(0)
+    end
+
+    test '#sample not a number' do
+      assert_raise(VectorArgumentError) { @vector.sample('1') }
+    end
+
+    test '#sample without argument' do
+      sampled = @vector.sample
+      assert_true @vector.to_a.include?(sampled)
+    end
+
+    test '#sample(1)' do
+      sampled = @vector.sample(1)
+      assert_kind_of Vector, sampled
+      assert_equal 1, sampled.size
+      assert_true sampled.is_in(@vector).all?
+    end
+
+    test '#sample by integer smaller than size' do
+      sampled = @vector.sample(3)
+      assert_equal 3, sampled.size
+      assert_equal 3, sampled.uniq.size
+      assert_true sampled.is_in(@vector).all?
+    end
+
+    test '#sample by integer equals to size' do
+      sampled = @vector.sample(8)
+      assert_equal 8, sampled.size
+      assert_equal 8, sampled.uniq.size
+      assert_true sampled.is_in(@vector).all?
+    end
+
+    test '#sample by integer oversampling' do
+      sampled = @vector.sample(10)
+      assert_equal 10, sampled.size
+      assert_true sampled.uniq.size <= 8
+      assert_true sampled.is_in(@vector).all?
+    end
+
+    test '#sample by float smaller than size' do
+      sampled = @vector.sample(0.7)
+      assert_equal 5, sampled.size
+      assert_equal 5, sampled.uniq.size
+      assert_true sampled.is_in(@vector).all?
+    end
+
+    test '#sample by float equals to size' do
+      sampled = @vector.sample(1.0)
+      assert_equal 8, sampled.size
+      assert_equal 8, sampled.uniq.size
+      assert_true sampled.is_in(@vector).all?
+    end
+
+    test '#sample by float oversampling' do
+      sampled = @vector.sample(2.0)
+      assert_equal 16, sampled.size
+      assert_true sampled.uniq.size <= 8
+      assert_true sampled.is_in(@vector).all?
     end
   end
 end

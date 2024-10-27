@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, macos] # windows, if: runner.os == 'Windows'
-        ruby: ['3.0', '3.1', '3.2']
+        ruby: ['3.0', '3.1', '3.2', '3.3']
     runs-on: ${{ matrix.os }}-latest
 
     steps:
@@ -29,9 +29,7 @@ jobs:
           wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
           sudo apt install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
           sudo apt update
-          sudo apt install -y -V libarrow-dev
-          # sudo apt install -y -V gir1.2-arrow-1.0
-          sudo apt install -y -V libarrow-glib-dev
+          sudo apt install -y -V libarrow-dev libarrow-glib-dev gobject-introspection
 
       - name: Prepare Apache Arrow on macOS
         if: runner.os == 'macOS'
@@ -52,10 +50,9 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+          cache-version: 1 # ignore contents of the cache and get and build all the gems anew
 
       - name: Run test
-        env:
-          TZ: Asia/Tokyo # set TZ to ensure the test using timestamp
         run: bundle exec rake test
 
       # - name: Check test coverage

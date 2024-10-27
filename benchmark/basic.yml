@@ -1,18 +1,18 @@
 loop_count: 3
 
 contexts:
-  - name: HEAD
-    prelude: |
-      $LOAD_PATH.unshift(File.expand_path('lib'))
-  - name: 0.3.0
-    gems:
-      red_amber: 0.3.0
-  - name: 0.2.0
-    gems:
-      red_amber: 0.2.0
   - name: 0.1.5
     gems:
       red_amber: 0.1.5
+  - name: 0.2.0
+    gems:
+      red_amber: 0.2.0
+  - name: 0.3.0
+    gems:
+      red_amber: 0.3.0
+  - name: HEAD
+    prelude: |
+      $LOAD_PATH.unshift(File.expand_path('lib'))
 
 prelude: |
   require 'red_amber'
@@ -43,7 +43,7 @@ benchmark:
   'B06: Pick by a block': |
     df.pick { keys.map { |key| key.end_with?('time') } }
 
-  'B07: Slice([]) by a index': |
+  'B07: Slice([]) by an index': |
     df[877]
 
   'B08: Slice by indeces': |

@@ -55,6 +55,51 @@ class VectorTest < Test::Unit::TestCase
     end
   end
 
+  sub_test_case 'Vector[]' do
+    test 'Vector[] by empty array' do
+      assert_equal_array [], Vector[[]]
+      assert_equal_array [], Vector[]
+    end
+
+    test 'Vector[] by arrays including nils' do
+      assert_equal_array [nil], Vector[nil]
+      assert_equal_array [nil, nil], Vector[nil, nil]
+    end
+
+    test 'Vector[] by an Array' do
+      array = [1, 2, 3]
+      assert_equal_array array, Vector[array]
+    end
+
+    test 'Vector[] by an expanded Array' do
+      array = [1, 2, 3]
+      assert_equal_array array, Vector[*array]
+    end
+  end
+
+  sub_test_case '#resolve' do
+    test '#resolve integer upcast' do
+      assert_equal :uint16, Vector.new(256).resolve([1]).type
+      assert_equal :uint16, Vector.new(256).resolve(Vector.new(1)).type
+    end
+
+    test '#resolve integer overflow' do
+      assert_equal_array [0], Vector.new(1).resolve([256])
+    end
+
+    test '#resolve string' do
+      assert_equal_array ['1'], Vector.new('A').resolve([1])
+    end
+
+    test '#resolve string to integer' do
+      assert_equal_array [65], Vector.new(1).resolve(['A'])
+    end
+
+    test '#resolve invalid argument' do
+      assert_raise(VectorArgumentError) { Vector.new(1).resolve(1) }
+    end
+  end
+
   sub_test_case 'Basic properties' do
     data(keep: true) do
       a = [0, 1, nil, 4]
@@ -237,6 +282,57 @@ class VectorTest < Test::Unit::TestCase
     test 'double default' do
       assert_equal 'RedAmber::Vector(:double, size=4)', @double.inspect
       assert_equal 'RedAmber::Vector(:string, size=16)', @string.inspect
+    end
+  end
+
+  sub_test_case 'coerce' do
+    test '#add' do
+      array = [1, 2, 3, nil]
+      vector = Vector.new(array)
+      assert_equal array, (0 + vector).to_a
+    end
+
+    test '#multiply' do
+      vector = Vector.new([1, 2, 3, nil])
+      assert_equal [-1.0, -2.0, -3.0, nil], (-1.0 * vector).to_a
+      assert_equal :double, (-1.0 * vector).type
+    end
+  end
+
+  sub_test_case '#propagate' do
+    setup do
+      @vector = Vector.new(1, 2, 3, 4)
+      @expected = [2.5, 2.5, 2.5, 2.5]
+    end
+
+    test 'propagate mean' do
+      assert_equal_array @expected, @vector.propagate(:mean)
+    end
+
+    test 'propagate by block' do
+      # same as @vector.propagate { |v| v.mean }
+      assert_equal_array @expected, @vector.propagate(&:mean)
+    end
+
+    test 'propagate with element-wise method' do
+      assert_raise(VectorArgumentError) { @vector.propagate(:round) }
+    end
+
+    test 'propagate with argument and block' do
+      assert_raise(VectorArgumentError) { @vector.propagate(:mean) { 2.5 } }
+    end
+  end
+
+  sub_test_case 'module_function .arrow_doc' do
+    test 'add' do
+      expected = <<~OUT
+        add(x, y): Add the arguments element-wise
+        ---
+        Results will wrap around on integer overflow.
+        Use function "add_checked" if you want overflow
+        to return an error.
+      OUT
+      assert_equal expected.chomp, ArrowFunction.arrow_doc(:add).to_s
     end
   end
 end

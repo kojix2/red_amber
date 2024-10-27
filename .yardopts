@@ -1,1 +1,15 @@
 --output-dir doc/yard
+--template-path doc/yard-templates
+--use-cache
+--asset doc/image:image
+-
+README.ja.md
+CHANGELOG.md
+doc/CODE_OF_CONDUCT.md
+doc/DataFrame.md
+doc/DataFrame_Comparison.md
+doc/DataFrame_Comparison_ja.md
+doc/Dev_Containers.ja.md
+doc/Dev_Containers.md
+doc/SubFrames.md
+doc/Vector.md

@@ -279,6 +279,7 @@ penguins.to_rover
 
   - Shows some information about self in a transposed style.
   - `tdr_str` returns same info as a String.
+  - `glimpse` is an alias. It is similar to dplyr's (or Polars's) `glimpse()`.
 
   ```ruby
   require 'red_amber'
@@ -572,7 +573,7 @@ penguins.to_rover
   [1, 2, 3]
   ```
 
-### `slice  `  - slice and select records -
+### `slice  `  - cut into slices of records -
 
   Slice and select records (rows) to create a sub DataFrame.
 
@@ -605,11 +606,14 @@ penguins.to_rover
 
 - Booleans as an argument
 
-  `slice(booleans)` accepts booleans as an argument in an Array, a Vector or an Arrow::BooleanArray . Booleans must be same length as `size`.
+  `filter(booleans)` or `slice(booleans)` accepts booleans as an argument in an Array, a Vector or an Arrow::BooleanArray . Booleans must be same length as `size`.
+
+  note: `slice(booleans)` is acceptable for orthogonality of `slice`/`remove`.
 
     ```ruby
     vector = penguins[:bill_length_mm]
-    penguins.slice(vector >= 40)
+    penguins.filter(vector >= 40)
+    # penguins.slice(vector >= 40) is also acceptable
 
     # =>
     #<RedAmber::DataFrame : 242 x 8 Vectors, 0x0000000000043d3c>
@@ -837,14 +841,14 @@ penguins.to_rover
 
   Assign new or updated variables (columns) and create an updated DataFrame.
 
-  - Variables with new keys will append new columns from the right.
+  - Variables with new keys will append new columns from right.
   - Variables with exisiting keys will update corresponding vectors.
 
     ![assign method image](doc/../image/dataframe/assign.png)
 
 - Variables as arguments
 
-    `assign(key_pairs)` accepts pairs of key and values as parameters. `key_pairs` should be a Hash of `{key => array_like}` or an Array of Arrays like `[[key, array_like], ... ]`. `array_like` is ether `Vector`, `Array` or `Arrow::Array`.
+    `assign(key_value_pairs)` accepts pairs of key and values as parameters. `key_value_pairs` should be a Hash of `{key => array_like}` or an Array of Arrays like `[[key, array_like], ... ]`. `array_like` is ether `Vector`, `Array` or `Arrow::Array`.
 
     ```ruby
     df = RedAmber::DataFrame.new(
@@ -861,12 +865,12 @@ penguins.to_rover
     2 Hinata        28
 
     # update :age and add :brother
-    df.assign do
+    df.assign(
       {
         age: age + 29,
         brother: ['Santa', nil, 'Momotaro']
       }
-    end
+    )
 
     # =>
     #<RedAmber::DataFrame : 3 x 3 Vectors, 0x00000000000658b0>
@@ -936,7 +940,7 @@ penguins.to_rover
 
 - Append from left
 
-  `assign_left` method accepts the same parameters and block as `assign`, but append new columns from leftside.
+  `assign_left` method accepts the same parameters and block as `assign`, but append new columns from left.
 
   ```ruby
   df.assign_left(new_index: df.indices(1))

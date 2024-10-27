@@ -1,3 +1,357 @@
+## [0.5.2] - 2023-09-01
+
+Support Apache Arrow 13.0.0 .
+This version is compatible with Arrow 12.0.0 .
+
+- Breaking change
+
+- Bug fixes
+  - Fix bundle install issue by install libyaml-devel (#280)
+  - Fix ownership in devcontainer ci (#280)
+
+- New features and improvements
+  - Support Arrow 13.0.0 (#280)
+
+- Documentation and Example
+  - Add dataframe_comparison_ja (#281)
+
+## [0.5.1] - 2023-08-18
+
+Docker environment is replaced by Dev Container,
+and Jupyter Notebooks will be created from qmd files.
+
+- Breaking change
+
+- Bug fixes
+  - Fix timestamp test to set TZ locally (#249)
+  - Fix regexp for beginning of String (#251)
+  - Fix loading bin/Gemfile locally in bin/jupyter script (#261)
+
+- New features and improvements
+  - Support sort and null_placement options in Vector#rank (#265)
+  - Add Vector#find_substring method (#270)
+  - Add Group#one method (#274)
+  - Add Group#all and #any method (#274)
+  - Add Group#median method (#274)
+  - Add Group#count_uniq method (#274)
+  - Introduce Dev Container environment
+    - Introduce Devcontainer environment (#253)
+    - Change lifecycle script from postCreate to onCreate (#253)
+    - Move example to bin (#253)
+    - Fix Python and Ruby versions in Dev Container (#254)
+    - Add locale and timezone settings (#256)
+    - Add quarto from devcontainer feature (#259)
+    - Install HaranoAjiFonts as default Tex font (#259)
+
+- Refactoring
+  - Rename boolean methods in VectorStringFunction (#263)
+  - Refine Vector#inspect to show wheather chunked or not (#267)
+  - Add an alias Group#count_all for #group_count (#274)
+
+- Improve in tests/CI
+  - Create rake commands for Notebook convert/test (#269)
+  - Fix rubocop warning of forwarding arguments in assign_update (#269)
+  - Use rake to start example script (#269)
+  - Add test in Vector#rank to cover illegal rank option error (#271)
+  - Add bundle install to Rakefile (#276)
+  - Use Dockerfile to create dev container (#276)
+  - Save image to ghcr in ci (#276)
+
+- Documentation and Example
+  - YARD
+    - Update Docker Environment (#245)
+    - Refine jupyter notebook environment (#253)
+    - Refine yard in Group aggregations (#274)
+    - Fix yard of Vector#rank (#269)
+    - Fix yard of Group (#269)
+  - Notebook
+    - Start source management for jupyter notebook by qmd (#259)
+    - Don't create ipynb if it exists (#261)
+    - Add Group methods (125 in total) (#269)
+    - Add ArrowFunction (126 in total) (#269)
+    - Add DataFrame#auto_cast (127 in total) (#269)
+    - Update required version in examples notebook (#269)
+    - Update examples_of_red_amber (#269)
+    - Update red-amber.qmd (#269)
+
+- GitHub site
+  - Fix broken link in README/README.ja by Viktorius Suwandi (#262)
+  - Change description in gemspec (#254)
+  - Add documents for Dev Container (#254)
+
+- Thanks
+  - Viktorius Suwandi
+
+## [0.5.0] - 2023-05-24
+
+- Breaking change
+  - Use non keyword argument in #sub_by_value (#219)
+  - Upgrade dependency to Arrow 12.0.0 (#238)
+    - right_join will output columns as same order as Red Arrow.
+    - DataFrame#join will not force ordering of original column by default
+    - Join with type, such as full_join, sort after join by default
+
+- Bug fixes
+  - Use truncate in Vector#sample(float) (#229)
+  - Support options in DataFrame#tdra (#231)
+  - Fix printing table with non-ascii strings (#233)
+  - Fix join for Arrow 12.0.0
+
+- New features and improvements
+  - Add a singleton method Vector.[] (#218)
+  - Add an alias #sub_group (#219)
+  - Accept Group#summarize{Hash} to rename aggregated columns (#219)
+  - Add Group#group_frame (#219)
+  - Add Vector#cast (#224)
+  - Add Vector#fill_nil(value) (#226)
+  - Add Vector#one (#227)
+  - Add Vector#mode (#228)
+  - Add DataFrame#propagate (#235)
+  - Add DataFrame#sample (#237)
+  - Add DataFrame#shuffle (#237)
+  - Support RankOptions in Vector#rank (#239)
+  - Introduce MatchSubstringOptions family in Vector (#241)
+    - Introduce Vector#match_substring?
+    - Add Vector#end_with?, #start_with? method
+    - Add Vector#match_like?
+    - Add Vector#count_substring method
+
+- Refactoring
+  - Refine Group and SubFrames function (#219)
+    - Refine Group#group_count
+    - Use Acero in Group#filters
+    - Refine Group#filters, not using Acero
+    - Refine Group#summarize(array)
+  - Use Acero for renaming columns in join (#238)
+  - Use index kernel with IndexOptions introduced in 12.0.0 (#240)
+
+- Improve in tests/CI
+  - Use Fedra 39 Rawhide in CI (#238)
+
+- Documentation and Example
+  - Add missing yard documents for SubFrames::Selectors (#219)
+  - Update docker/example (#219)
+  - Update Gemfile in docker (#219)
+  - Add README.ja.md (#242)
+
+- GitHub site
+  - Update link of Red Data Tools Chat to matrix (#242)
+
+- Thanks
+
+## [0.4.2] - 2023-04-02
+
+- Breaking change
+
+- Bug fixes
+ - Fix Vector#modulo, #fdiv, #remainder (#203)
+
+- New features and improvements
+  - Update SubFrames#take to return SubFrames (#212)
+
+- Refactoring
+  - Refine SubFrames to support partial retrieval (#207)
+  - Upgrade SubFrames#frames  and promote to public (#207)
+  - Use faster count in Group#inspect (#207)
+
+- Improve in tests/CI
+
+- Documentation and Example
+  - Introduce minimum docker environment (#205)
+  - Move example REPL to docker (#205)
+  - Add readme.md in docker (#205)
+  - Add example_of_red_amber.ipynb (#205)
+  - Use smaller dataset in irb example
+  - Fix docker/example
+  - Updated link to red-data-tools (#213)
+    - Thanks to Soumya Kushwaha
+
+- GitHub site
+  - Migrated to [Red Data Tools](https://github.com/red-data-tools)
+    - Thanks to Sutou Kouhei
+
+- Thanks
+  - Sutou Kouhei
+  - Soumya Kushwaha
+
+## [0.4.1] - 2023-03-11
+
+- Breaking change
+  - Remove Vector.aggregate? method (#200)
+
+- Bug fixes
+  - Return self in DataFrame#drop when dropper is empty (reverts 746ac263) (#193)
+  - Return self in DataFrame#rename when renaming to same name (#193)
+  - Return self in DataFrame#pick when pick itself (#199)
+  - Fix column width for non-ascii elemnts in DataFrame#to_s (#193)
+    - This change uses String#width.
+  - Fix DataFrame#to_iruby when data is date32 type (#193)
+  - Fix DataFrame#shorthand to show temporal type data simply (#193)
+  - Fix Vector#rank when data is ChunkedArray (#198)
+  - Fix Vector element-wise functions with nil as scalar (#198)
+  - Support :force_order for all methods of join family (#199)
+    - Supports :force_order option to force sorting after join for all #join familiy.
+    - This will valuable in some cases such as large dataframes.
+  - Ensure baseframe's schema for SubFrames (#200)
+
+- New features and improvements
+  - Add Vector#first, #last method (#198)
+    - This method will be used in SubFrames feature.
+  - Add Vector#modulo method (#198)
+    - The divmod function in Arrow C++ is still in draft state.
+      This method was created by combining existing functions
+  - Add Vector#quotient method (#198)
+  - Add aliases #div, #mod, #mul, #pow, #quo and #sub for Vector (#198)
+  - Add Vector#*_checked functions (#198)
+    - This functions will check numeric range overflow.
+  - Add 'tdra' and 'plain' in display mode (#193)
+    - The plain mode and default inspect will show up to 128 rows and 128 columns.
+  - Add String#width method in refinements (#193)
+    - This will be used to update DataFrame#to_s.
+  - Introduce pre-loaded REPL environment (#199)
+    - This commit will add bin/example and it will start irb environment
+      with enabled commonly used datasets such as penguins, diamonds, etc.
+  - Upgrade SubFrames#aggregate to accept block (#200)
+
+- Refactoring
+  - Use symbolized keys in refinements of Table#keys, #key? (#193)
+    - This can be treat Tables and DataFrames as same manner.
+  - Use key_name.succ in suffix of DataFrame#join (#193)
+    - This will make simple to get name candidate.
+  - Use ||= to memorize instance variables (#193)
+  - Refine vector projection to use #variables (#193)
+    - #variables is fastest when picking Vectors.
+  - Refine Vector#is_in to avoid #pack (#198)
+  - Refine Vector#index (#198)
+
+- Improve in tests/CI
+  - Tests
+    - Update benchmarks to test from older version (#193)
+    - Refine test of Vector function with scalar (#198)
+    - Refine test subframes and test_vector_selectable (#200)
+
+  - Cops
+  - CI
+
+- Documentation
+  - Update documents(small fix) (#201)
+
+- GitHub site
+
+- Thanks
+
+## [0.4.0] - 2023-02-25
+
+- Breaking change
+  - Upgrade dependency to Arrow 11.0.0 (#188)
+
+- Bug fixes
+  - Add :force_order option for DataFrame#join (#174)
+  - Return error for empty DataFrame in DataFrame#filter (#172)
+  - Accept ChunkedArray in DataFrame#filter (#172)
+  - Fix Vector#replace to accept Arrow::Array as a replacer (#179)
+  - Fix Vector#round_to_multiple to accept Float or Integer (#180)
+  - Change Vector atan2 to a class method (#180)
+  - Fix Vector#shift when boolean Vector (#184)
+  - Fix processing empty SubFrames (#183)
+  - Do not check object id in DataFrame#rename, #drop for self (#188)
+
+- New features and improvements
+  - Accept a block in DataFrame#filter (#172)
+  - Add Vector.aggregate? method (#175)
+  - Introduce Vector#propagate method (#175)
+  - Add Vector#rank methods (#176)
+  - Add Vector#sample method (#176)
+  - Add Vector#sort method (#176)
+  - Promote DataFrame#shape_str to public (#184)
+  - Introduce Vector#concatenate (#184)
+  - Add #numeric? in refinements of Array (#184)
+  - Add Vector#cumulative_sum_checked and #cumsum (#184)
+  - Add Vector#resolve method (#184)
+  - Add DataFrame#tdra method (#184)
+  - Add #expand as an alias for Vector#propagate (#184)
+  - Add #glimpse as an alias for DataFrame#tdr (#184)
+  - New class SubFrames (#183)
+    - Introduce class SubFrames
+    - Memorize dataframes in SubFrames
+    - Add @frames to memorize sub DataFrames
+    - Accept filters in SubFrames.new
+    - Accept block in SubFrames.new
+    - Add SubFrames.by_filter
+    - Introduce methods creating SubFrames from DataFrame
+    - Introduce SubFrames#each method
+    - Add SubFrames#to_s method
+    - Add SubFrames#concatenate method
+    - Add SubFrames#offset_indices method
+    - SubFrames#aggregate method
+    - Redefine SubFrames#map to return SubFrames
+    - Define SubFrame#map dynamically
+    - Add SubFrames#assign method
+    - Redefine SubFrames#select to return SubFrames
+    - Add SubFrames#reject method
+    - Add SubFrames#filter_map method
+    - Refine DataFrame#indices memorizing @indices
+    - Rename SubFrames#universal_frame as #baseframe
+    - Set Group iteration feature to @api private
+
+- Refactoring
+  - Generate Vector functions in class method (#177)
+  - Set Constant visibility to private (#179)
+  - Separate test_vector_function (#179)
+  - Relocate methods in DataFrameIndexable (#179)
+  - Rename Array refinements to the same name as Vector (#184)
+
+- Improve in tests/CI
+  - Tests
+    - Update benchmarks to set 0.3.0 as a reference (#167)
+    - Move test of Vector#logb to proper location (#180)
+
+  - Cops
+    - Update .rubocop.yml to align with latest cops (#174)
+    - Unify style of MethodCallIndentation as relative to reciever (#184)
+
+  - CI
+    - Fix setting up Arrow by homebrew in CI (#167)
+    - Fix CI error on homebrew deleting python link (#167)
+    - Set cache-version to get new C extensions in CI (#173)
+      - Thanks to @kou for suggestion.
+
+- Documentation
+  - Update DataFrame.md about loading csv without headers (#165)
+    - Thanks to kojix2
+  - Update YARD in DataFrame combinable (#168)
+  - Update comment for Ruby 2.7 support in README.md
+  - Update license year
+  - Update README (#172)
+  - Update Vector.md and yardoc in #propagate (#175)
+  - Use customized style sheet for YARD (#179)
+  - Add examples for the doc of #pick and #drop (#179)
+  - Add examples to YARD in DataFrame reshaping methods (#179)
+  - Update documents in DataFrameDisplayable (#179)
+  - Update documents in DataFrameVariableOperation (#179)
+  - Update document for dynamically generated methods (#179)
+  - Unify style in document (#179)
+  - Update documents in DataFrameSelectable (#179)
+  - Update documents of basic Vector methods (#179)
+  - Update document in VectorUpdatable (#179)
+  - Update document of Group (#179)
+  - Update document of DataFrameLoadSave (#180)
+  - Add examples for document of ArrowFunction (#180)
+  - Update document of Vector_unary_aggregation (#180)
+  - Update document of Vector_unary_element_wise (#180)
+  - Update document of Vector_biary_element_wise (#180)
+  - Add documentation to give comparison of dataframes(#169)
+    - Thanks to Benson Muite
+  - Update documents for consistency of method indentation (#189)
+  - Update CHANGELOG (#189)
+  - Update README for 0.4.0 (#189)
+
+- GitHub site
+
+- Thanks
+  - kojix2
+  - Benson Muite
+
 ## [0.3.0] - 2022-12-18
 
 - Breaking change
@@ -238,11 +592,11 @@
       - Move binder support to heronshoes/docker-stacks repository.
       - Update README notebook on binder.
       - Add examples_of_RedAmber notebook on binder.
-    
+
     - Start to use discussions.
 
 - Thanks
-  
+
   - Kenta Murata
 
 ## [0.2.1] - 2022-09-07
@@ -291,7 +645,7 @@
   - Update Jupyter Notebook `71 examples of RedAmber`
 
 - Thanks
-  
+
   - Kenta Murata
 
 ## [0.2.0] - 2022-08-15
@@ -306,7 +660,7 @@
   - Remove optional `require` for rover (#55)
     Fix DataFrame.new for argument with Rover::DataFrame.
   - Fix occasional failure in CI (#59)
-    Sometimes the CI test fails. I added -dev dependency 
+    Sometimes the CI test fails. I added -dev dependency
     in Arrow install by apt, not doing in bundler.
 
   - Fix calling :take in V#[] (#56)
@@ -324,7 +678,7 @@
     - Upgrade to Arrow 9.0.0 (#59)
     - Add Vector#quantile method (#59)
       Arrow::QuantileOptions has supported in Arrow GLib 9.0.0 (ARROW-16623, Thanks!)
-  
+
     - Add Vector#quantiles (#62)
 
     - Add DataFrame#each_row (#56)
@@ -335,7 +689,7 @@
     - Refine DataFrame.new to use pattern match
     - Use pattern match in DataFrame#assign
     - Use pattern match in DataFrame#rename
-  
+
   - Accept Array for renamer/assigner in #rename/#assign (#61)
     - Accept assigner by Arrays in DataFrame#assign
     - Accept renamer pairs by Arrays in DataFrame#rename
@@ -350,15 +704,15 @@
     - Intorduce DataFrame#to_wide method
 
   - Others
- 
+
     - Add alias sort_index for array_sort_indices (#59)
     - Enable :width option in DataFrame#to_s (#62)
     - Add options to DataFrame#format_table (#62)
 
   - Update Documents
-  
+
     - Add Yard doc for some methods
-  
+
     - Update Jupyter notebook '61 Examples of Red Amber' (#65)
 
 ## [0.1.8] - 2022-08-04 (experimental)
@@ -421,7 +775,7 @@
       - Show nils.
       - Show data types.
     - Refine documents to use new formatter output
-  
+
   - Simplify options of Vector functions (#46)
     Vector functions with options use optional argument opt in previous code.
 
@@ -433,7 +787,7 @@
     - Add methods to Group
 
   - Move parquet and rover to development dependency (#49)
-  
+
   - Refine text in `DataFrame#to_iruby` (#40)
 
   - Add badges in Github site
@@ -498,7 +852,7 @@
    -  Improve `DataFrame#[]`, `#slice`, `#remove` by a new engine
       -  It parses arguments to Vector internally.
       -  Used Kernel#Array to simplify code (#16) .
-    - recycle: Move `DataFrame#slice`, `#remove` to Selectable
+    - Move `DataFrame#slice`, `#remove` to Selectable
     - Refine `DataFrame#take`, `#filter` (undocumented)
 
   - Introduce coerce in Vector (#35)
@@ -530,7 +884,7 @@
     - Add gem and status badges in README. (#42) [Patch by kojix2]
 
 - Thanks
-  
+
   - kojix2
 
 ## [0.1.5] - 2022-06-12 (experimental)
@@ -571,7 +925,7 @@
     - Change to use DataFrame#map_indices in #[]
 
   - Add rounding functions with opts (#21)
-    -  With options :mode and :n_digits 
+    -  With options :mode and :n_digits
     -  :n_digits also can be specified with :multiple option in `Vector#round_to_multiple`
     - `Vector#round`
     - `Vector#ceil`
@@ -639,7 +993,7 @@
     - Add example about TDR (#4)
     - Separate README to create DataFrame and Vector documents (#12)
     - Add DataFrame model concept image to README (#12)
-  
+
   - GitHub site
     - Switched to use merge on GitHub (not to push merged master) (#1)
     - Create lifetime issue #3 to show the goal of this project (#3)
@@ -664,7 +1018,7 @@
 
   - `Vector`
     - Add categorization functions
-      
+
       This is an important step to support `slice` method and NA treatment features.
       -  `is_finite`
       -  `is_inf`

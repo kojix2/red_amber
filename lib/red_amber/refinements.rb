@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Namespace of RedAmber
 module RedAmber
   # Add additional capabilities to Hash
   module RefineHash
@@ -142,7 +143,7 @@ module RedAmber
   module RefineArrowTable
     refine Arrow::Table do
       def keys
-        columns.map(&:name)
+        columns.map { |column| column.name.to_sym }
       end
 
       def key?(key)
@@ -154,23 +155,27 @@ module RedAmber
   # Add additional capabilities to Array
   module RefineArray
     refine Array do
-      def integers?
+      def integer?
         all? { |e| e.is_a?(Integer) } # rubocop:disable Performance/RedundantEqualityComparisonBlock
       end
 
-      def booleans?
+      def numeric?
+        all? { |e| e.is_a?(Numeric) } # rubocop:disable Performance/RedundantEqualityComparisonBlock
+      end
+
+      def boolean?
         all? { |e| e.is_a?(TrueClass) || e.is_a?(FalseClass) || e.is_a?(NilClass) }
       end
 
-      def symbols?
+      def symbol?
         all? { |e| e.is_a?(Symbol) } # rubocop:disable Performance/RedundantEqualityComparisonBlock
       end
 
-      def strings?
+      def string?
         all? { |e| e.is_a?(String) } # rubocop:disable Performance/RedundantEqualityComparisonBlock
       end
 
-      def symbols_or_strings?
+      def symbol_or_string?
         all? { |e| e.is_a?(Symbol) || e.is_a?(String) }
       end
 
@@ -196,4 +201,19 @@ module RedAmber
       end
     end
   end
+
+  # Add additional capabilities to String
+  module RefineString
+    refine String do
+      def width
+        chars
+          .partition(&:ascii_only?)
+          .map.with_index(1) { |a, i| a.size * i }
+          .sum
+      end
+    end
+  end
+
+  private_constant :RefineArray, :RefineArrayLike, :RefineArrowTable,
+                   :RefineHash, :RefineString
 end

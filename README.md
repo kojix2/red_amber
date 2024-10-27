@@ -1,42 +1,53 @@
 # RedAmber
 
-[![Gem Version](https://badge.fury.io/rb/red_amber.svg)](https://badge.fury.io/rb/red_amber)
-[![CI](https://github.com/heronshoes/red_amber/actions/workflows/ci.yml/badge.svg)](https://github.com/heronshoes/red_amber/actions/workflows/ci.yml)
+[![Gem Version](https://img.shields.io/gem/v/red_amber?color=brightgreen)](https://rubygems.org/gems/red_amber)
+[![CI](https://github.com/heronshoes/red_amber/actions/workflows/ci.yml/badge.svg)](https://github.com/red-data-tools/red_amber/actions/workflows/ci.yml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b8a745047045d2f49daa/maintainability)](https://codeclimate.com/github/heronshoes/red_amber/maintainability)
 [![Test coverage](https://api.codeclimate.com/v1/badges/b8a745047045d2f49daa/test_coverage)](https://codeclimate.com/github/heronshoes/red_amber/test_coverage)
-[![Doc](https://img.shields.io/badge/docs-latest-blue)](https://heronshoes.github.io/red_amber/)
-[![Discussions](https://img.shields.io/github/discussions/heronshoes/red_amber)](https://github.com/heronshoes/red_amber/discussions)
+[![Doc](https://img.shields.io/badge/docs-latest-blue)](https://red-data-tools.github.io/red_amber/)
+[![Discussions](https://img.shields.io/github/discussions/heronshoes/red_amber)](https://github.com/red-data-tools/red_amber/discussions)
 
-A simple dataframe library for Ruby.
+A dataframe library for Rubyists.
 
 - Powered by [Red Arrow](https://github.com/apache/arrow/tree/master/ruby/red-arrow)
-[![Gitter Chat](https://badges.gitter.im/red-data-tools/en.svg)](https://gitter.im/red-data-tools/en)
+[![Red Data Tools Chat (en)](https://badges.gitter.im/red-data-tools/en.svg)](https://app.element.io/#/room/#red-data-tools_en:gitter.im) [![Gem Version](https://img.shields.io/gem/v/red-arrow?color=brightgreen)](https://rubygems.org/gems/red-arrow)
 - Inspired by the dataframe library [Rover-df](https://github.com/ankane/rover)
 
-![screenshot from jupyterlab](https://raw.githubusercontent.com/heronshoes/red_amber/main/doc/image/screenshot.png)
+[日本語のREADME](README.ja.md)
+
+![screenshot from jupyterlab](https://raw.githubusercontent.com/red-data-tools/red_amber/main/doc/image/screenshot.png)
+
+## Overview
+* RedAmber is a dataframe library written in ruby. It uses columnar memory format based on [Apache Arrow](https://arrow.apache.org/).
+* Our goal is to manipulate data frames in a Ruby-like writing style using blocks and collections.
+* You can easily try RedAmber with [Dev Container](https://containers.dev/). See [RedAmber Dev Container](doc/Dev_Containers.md).
+* We have [rich document with many examples](https://red-data-tools.github.io/red_amber/) and Jupyter Notebook with 127 operation examples. See [RedAmber Dev Container](doc/Dev_Containers.md).
 
 ## Requirements
 ### Ruby
-Supported Ruby version is >= 3.0 (since RedAmber 0.3.0).
-- I decided to remove Ruby 2.7 without waiting for EOL. See [Release note for v0.3.0](https://github.com/heronshoes/red_amber/discussions/162) for details.
+Supported Ruby version is >= 3.0.
 
-### Libraries
+### Required libraries
 ```ruby
-gem 'red-arrow',   '~> 10.0.0' # Requires Apache Arrow (see installation below)
-gem 'red-parquet', '~> 10.0.0' # Optional, if you use IO from/to parquet
-gem 'rover-df',    '~> 0.3.0' # Optional, if you use IO from/to Rover::DataFrame
+gem 'red-arrow',   '>= 12.0.0' # Requires Apache Arrow (see installation below).
+gem 'red-arrow-numo-narray'    # Optional, recommended if you use inputs from Numo::NArray,
+                               # or use random sampling feature.
+gem 'red-parquet', '>= 12.0.0' # Optional, if you use IO from/to parquet.
+gem 'red-datasets-arrow'       # Optional, if you use Red Datasets.
+gem 'red-arrow-activerecord'   # Optional, if you use Active Record.
+gem 'rover-df'                 # Optional, if you use IO from/to Rover::DataFrame.
 ```
 
 ## Installation
 
-Install requirements before you install Red Amber.
+Install requirements before you install RedAmber.
 
-- Apache Arrow (~> 10.0.0)
-- Apache Arrow GLib (~> 10.0.0)
-- Apache Parquet GLib (~> 10.0.0)  # If you use IO from/to parquet
+- Apache Arrow (>= 12.0.0)
+- Apache Arrow GLib (>= 12.0.0)
+- Apache Parquet GLib (>= 12.0.0)  # If you use IO from/to parquet
 
 See [Apache Arrow install document](https://arrow.apache.org/install/).
-  
+
   - Minimum installation example for the latest Ubuntu:
 
       ```
@@ -45,51 +56,68 @@ See [Apache Arrow install document](https://arrow.apache.org/install/).
       wget https://apache.jfrog.io/artifactory/arrow/$(lsb_release --id --short | tr 'A-Z' 'a-z')/apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
       sudo apt install -y -V ./apache-arrow-apt-source-latest-$(lsb_release --codename --short).deb
       sudo apt update
-      sudo apt install -y -V libarrow-dev
-      sudo apt install -y -V libarrow-glib-dev
+      sudo apt install -y -V libarrow-dev libarrow-glib-dev
       ```
 
-  - On Fedora 38 (Rawhide):
+  - On Fedora 39 (Rawhide):
 
       ```
       sudo dnf update
-      sudo dnf -y install gcc-c++ libarrow-devel libarrow-glib-devel ruby-devel
+      sudo dnf -y install gcc-c++ libarrow-devel libarrow-glib-devel ruby-devel libyaml-devel
       ```
 
   - On macOS, using Homebrew:
 
       ```
-      brew install apache-arrow
-      brew install apache-arrow-glib
+      brew install apache-arrow apache-arrow-glib
       ```
 
 If you prepared Apache Arrow, add these lines to your Gemfile:
 
 ```ruby
-gem 'red-arrow',   '~> 10.0.0'
+gem 'red-arrow',   '>= 12.0.0'
 gem 'red_amber'
-gem 'red-parquet', '~> 10.0.0' # Optional, if you use IO from/to parquet
-gem 'rover-df',    '~> 0.3.0'  # Optional, if you use IO from/to Rover::DataFrame
-gem 'red-datasets-arrow'       # Optional, recommended if you use Red Datasets
 gem 'red-arrow-numo-narray'    # Optional, recommended if you use inputs from Numo::NArray
+                               # or use random sampling feature.
+gem 'red-parquet', '>= 12.0.0' # Optional, if you use IO from/to parquet
+gem 'red-datasets-arrow'       # Optional, recommended if you use Red Datasets
+gem 'red-arrow-activerecord'   # Optional, if you use Active Record
+gem 'rover-df',                # Optional, if you use IO from/to Rover::DataFrame.
 ```
 
 And then execute `bundle install` or install them yourself such as `gem install red_amber`.
 
+## Development Containers
+
+This repository supports [Dev Containers](https://containers.dev/). You can create a container as a full-featured development environment for RedAmber. The environment includes Ruby, Apache Arrow, RedAmber with source tree, GitHub CLI, sample datasets and Jupyter Lab with IRuby kernel. And you don't need to worry about the change of your local environment.
+
+`.devcontainer` directory in this repository includes settings of Dev Container for RedAmber.
+Please refer [How to use Dev Containers in RedAmber](doc/Dev_Containers.md) to use it.
+
 ## Docker image and Jupyter Notebook
 
-[RubyData Docker Stacks](https://github.com/RubyData/docker-stacks) is available as a ready-to-run Docker image containing Jupyter and useful data tools as well as RedAmber (Thanks to @mrkn).
+(Notice: This feature may be removed in the future. Try Dev Container above.)
 
-Also you can try the contents of this README interactively by [Binder](https://mybinder.org/v2/gh/heronshoes/docker-stacks/RedAmber-binder?filepath=red-amber.ipynb). 
+Docker image is available from `docker` folder. See [readme](docker/readme.md) for instruction. Integrated Jypyter notebook is in docker/notebook folder.
+
+You can try the contents of this README interactively by [Binder](https://mybinder.org/v2/gh/heronshoes/docker-stacks/RedAmber-binder?filepath=red-amber.ipynb).
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/heronshoes/docker-stacks/RedAmber-binder?filepath=red-amber.ipynb)
 
+[RubyData Docker Stacks](https://github.com/RubyData/docker-stacks) is available as a ready-to-run Docker image containing Jupyter and useful data tools as well as RedAmber (Thanks to Kenta Murata).
+
+## Comparison of DataFrames
+
+Comparison of  basic features of RedAmber with Python
+[pandas](https://pandas.pydata.org/),
+R [Tidyverse](https://www.tidyverse.org/) and
+Julia [Dataframes](https://dataframes.juliadata.org/stable/) is in [DataFrame_Comparison.md](doc/DataFrame_Comparison.md) (Thanks to Benson Muite).
 
 ## Data frame in `RedAmber`
 
 Class `RedAmber::DataFrame` represents a set of data in 2D-shape.
-The entity is a Red Arrow's Table object. 
+Its entity is a Red Arrow's Table object.
 
-![dataframe model of RedAmber](https://raw.githubusercontent.com/heronshoes/red_amber/main/doc/image/dataframe_model.png)
+![dataframe model of RedAmber](https://raw.githubusercontent.com/red-data-tools/red_amber/main/doc/image/dataframe_model.png)
 
 Let's load the library and try some examples.
 
@@ -109,7 +137,7 @@ then
 require 'datasets-arrow' # to load sample data
 
 dataset = Datasets::Diamonds.new
-diamonds = DataFrame.new(dataset) # from v0.2.2, should be `dataset.to_arrow` if older.
+diamonds = DataFrame.new(dataset) # before v0.2.3, should be `dataset.to_arrow`
 
 # =>
 #<RedAmber::DataFrame : 53940 x 10 Vectors, 0x000000000000f668>
@@ -130,7 +158,7 @@ For example, we can compute mean prices per cut for the data larger than 1 carat
 
 ```ruby
 df = diamonds
-  .slice { carat > 1 }
+  .slice { carat > 1 } # or use #filter instead of #slice
   .group(:cut)
   .mean(:price) # `pick` prior to `group` is not required if `:price` is specified here.
   .sort('-mean(price)')
@@ -168,7 +196,7 @@ df.rename('mean(price)': :mean_price_USD)
 
 ### Example: starwars dataset
 
-Next example is `starwars` dataset reading from the downloaded CSV file. Followed by minimum data cleansing.
+Next example is `starwars` dataset reading from the downloaded CSV file. Followed by minimum data cleaning.
 
 ```ruby
 uri = URI('https://vincentarelbundock.github.io/Rdatasets/csv/dplyr/starwars.csv')
@@ -179,7 +207,7 @@ starwars
   .drop(0) # delete unnecessary index column
   .remove { species == "NA" } # delete unnecessary rows
   .group(:species) { [count(:species), mean(:height, :mass)] }
-  .slice { count > 1 }
+  .slice { count > 1 } # or use #filter instead of slice
 
 # =>
 #<RedAmber::DataFrame : 8 x 4 Vectors, 0x000000000000f848>
@@ -206,32 +234,33 @@ See [Vector.md](doc/Vector.md) for details.
 
 ## Jupyter notebook
 
-[89 Examples of Red Amber](https://github.com/heronshoes/docker-stacks/blob/RedAmber-binder/binder/examples_of_red_amber.ipynb)
-([raw file](https://raw.githubusercontent.com/heronshoes/docker-stacks/RedAmber-binder/binder/examples_of_red_amber.ipynb)) shows more examples in jupyter notebook.
-
-You can try this notebook on [Binder](https://mybinder.org/v2/gh/heronshoes/docker-stacks/RedAmber-binder?filepath=examples_of_red_amber.ipynb). 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/heronshoes/docker-stacks/RedAmber-binder?filepath=examples_of_red_amber.ipynb)
-
+We are managing the source of Jupyter Notebook in qmd format by Quarto. You can easily create Notebooks and try it with Jupyter Lab in [Dev Container](doc/Dev_Containers.md).
 
 ## Development
 
+The recommended way to develop RedAmber is to use Dev Container. Please refer [How to use Dev Containers in RedAmber](doc/Dev_Containers.md) to use it.
+
+Otherwise run below commands after install required libraries in your local system.
+
 ```shell
-git clone https://github.com/heronshoes/red_amber.git
+git clone https://github.com/red-data-tools/red_amber.git
 cd red_amber
 bundle install
 bundle exec rake test
 ```
 
+We need to pass `rake test` in development of RedAmber, but not require to pass `rake rubocop` when you make a contribution. In this project we respect your preferences in code style. However, we may unify the style during merging.
+
 ## Community
 
 I will appreciate if you could help to improve this project. Here are a few ways you can help:
 
-- Let's talk in the [discussions](https://github.com/heronshoes/red_amber/discussions). [![Discussions](https://img.shields.io/github/discussions/heronshoes/red_amber)](https://github.com/heronshoes/red_amber/discussions)
+- Let's talk in the [discussions](https://github.com/heronshoes/red_amber/discussions). [![Discussions](https://img.shields.io/github/discussions/heronshoes/red_amber)](https://github.com/red-data-tools/red_amber/discussions)
   - Browse Q and A, how to use, tips, etc.
   - Ask questions you’re wondering about.
   - Share ideas. The idea may be promoted to issues or pull requests.
-- [Report bugs or suggest new features](https://github.com/heronshoes/red_amber/issues)
-- Fix bugs and [submit pull requests](https://github.com/heronshoes/red_amber/pulls)
+- [Report bugs or suggest new features](https://github.com/red-data-tools/red_amber/issues)
+- Fix bugs and [submit pull requests](https://github.com/red-data-tools/red_amber/pulls)
 - Write, clarify, or fix documentation
 
 ## License

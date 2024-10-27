@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
 module RedAmber
-  VERSION = '0.3.1-HEAD'
+  # Library version
+  VERSION = '0.5.2'
 end

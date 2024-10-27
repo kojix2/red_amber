@@ -100,8 +100,19 @@ class VectorTest < Test::Unit::TestCase
       assert_equal_array [4, 2, 5], @vec.replace(Arrow::Array.new([true, false, true]), Vector.new(4, 5))
     end
 
+    test 'replace with Arrow::Array' do
+      assert_equal_array [4, 2, 5], @vec.replace(Arrow::Array.new([true, false, true]), Arrow::Array.new([4, 5]))
+    end
+
     test 'invalid specifier' do
       assert_raise(VectorArgumentError) { @vec.replace(%w[A B C], 0) }
+    end
+  end
+
+  sub_test_case('fill_nil') do
+    test 'fill_nil(0)' do
+      vec = Vector.new([1, 2, nil])
+      assert_equal_array [1, 2, 0], vec.fill_nil(0)
     end
   end
 
@@ -160,16 +171,31 @@ class VectorTest < Test::Unit::TestCase
   end
 
   sub_test_case '#shift' do
-    test '#shift' do
-      vector = Vector.new([1, 2, 3, 4, 5])
-      assert_equal [nil, 1, 2, 3, 4], vector.shift
-      assert_equal [3, 4, 5, nil, nil], vector.shift(-2)
-      assert_equal [0, 0, 1, 2, 3], vector.shift(2, fill: 0)
+    setup do
+      @numeric = Vector.new(1, 2, 3, 4, 5)
+      @boolean = Vector.new(true, false, true, false, false)
+    end
+
+    test '#shift amount too large' do
+      assert_raise(VectorArgumentError) { @numeric.shift(5) }
+      assert_raise(VectorArgumentError) { @numeric.shift(-5) }
+    end
+
+    test '#shift numeric Vector' do
+      assert_equal_array [nil, 1, 2, 3, 4], @numeric.shift
+      assert_equal_array [3, 4, 5, nil, nil], @numeric.shift(-2)
+      assert_equal_array [0, 0, 1, 2, 3], @numeric.shift(2, fill: 0)
+    end
+
+    test '#shift boolean Vector' do
+      assert_equal_array [nil, true, false, true, false], @boolean.shift
+      assert_equal_array [true, false, false, nil, nil], @boolean.shift(-2)
+      assert_equal_array [false, false, true, false, true], @boolean.shift(2, fill: false)
     end
 
     test '#shift, amount == 0' do
-      vector = Vector.new([1, 2, 3, 4, 5])
-      assert_equal_array vector, vector.shift(0)
+      assert_equal_array [1, 2, 3, 4, 5], @numeric.shift(0)
+      assert_equal_array [true, false, true, false, false], @boolean.shift(0)
     end
   end
 
@@ -313,6 +339,82 @@ class VectorTest < Test::Unit::TestCase
       vector = Vector.new(%w[a c e])
       other = Vector.new(%w[b d f x])
       assert_raise(NameError) { Vector.new(array).merge(other) }
+    end
+  end
+
+  sub_test_case '#concatenate' do
+    setup do
+      @string = Vector.new(%w[A B C])
+      @integer = Vector.new([1, 2])
+    end
+
+    test '#concatenate []' do
+      assert_raise(ArgumentError) { @string.concatenate }
+      assert_equal_array %w[A B C], @string.concatenate([])
+      assert_equal_array %w[A B C], @string.concatenate(Vector.new)
+      assert_equal_array [1, 2], @integer.concatenate([])
+      assert_equal_array [1, 2], @integer.concatenate(Vector.new)
+    end
+
+    test '#concatenate integer into string' do
+      expected = %w[A B C 1 2]
+      assert_equal_array expected, @string.concatenate([1, 2])
+      assert_equal_array expected, @string.concatenate(@integer)
+    end
+
+    test '#concatenate string into integer' do
+      assert_equal_array [1, 2, 65, 66, 67], @integer.concatenate(%w[A B C])
+      assert_raise(Arrow::Error::Invalid) { @integer.concatenate(@string) }
+    end
+
+    test '#concatenate string' do
+      assert_equal_array %w[A B C], Vector.new.concatenate(@string)
+      assert_equal_array %w[1 2], Vector.new.concatenate(@integer)
+      assert_equal_array %w[A B C D E], @string.concatenate(%w[D E])
+      assert_equal_array %w[A B C D E], @string.concatenate(Arrow::Array.new(%w[D E]))
+      assert_equal_array %w[A B C D E], @string.concatenate(Arrow::ChunkedArray.new([%w[D E]]))
+      assert_equal_array %w[A B C D E], @string.concatenate(Vector.new(%w[D E]))
+    end
+
+    test '#concatenate integer' do
+      assert_equal_array [1, 2, 3, 4], @integer.concatenate([3, 4])
+      assert_equal_array [1, 2, 3, 4], @integer.concatenate(Arrow::Array.new([3, 4]))
+      assert_equal_array [1, 2, 3, 4], @integer.concatenate(Arrow::ChunkedArray.new([[3, 4]]))
+      assert_equal_array [1, 2, 3, 4], @integer.concatenate(Vector.new([3, 4]))
+    end
+  end
+
+  sub_test_case '#cast' do
+    setup do
+      @vector = Vector.new(1, 2, nil)
+    end
+
+    test '#cast(:int32)' do
+      vector = @vector.cast(:int32)
+      assert_equal :int32, vector.type
+      assert_equal_array [1, 2, nil], vector
+    end
+
+    test '#cast(:int64)' do
+      vector = @vector.cast(:int64)
+      assert_equal :int64, vector.type
+      assert_equal_array [1, 2, nil], vector
+    end
+
+    test '#cast(:double)' do
+      vector = @vector.cast(:double)
+      assert_equal :double, vector.type
+      assert_equal_array [1.0, 2.0, nil], vector
+    end
+
+    test '#cast(:string)' do
+      vector = @vector.cast(:string)
+      assert_equal :string, vector.type
+      assert_equal_array ['1', '2', nil], vector
+    end
+
+    test '#cast unsupported type' do
+      assert_raise(TypeError) { @vector.cast(:list) }
     end
   end
 end
